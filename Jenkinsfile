@@ -1,14 +1,27 @@
-node {
-    stage('Stage 1') {
-        echo 'This is Stage 1'
-        
+pipeline {
+  agent any
+  stages {
+    stage('Build') {
+      steps {
+        echo 'make build'
+      }
     }
-    stage('Stage 2') {
-        echo 'This is Stage 2'
-        
+    stage('Test') {
+      steps {
+        echo 'make test'
+      }
     }
-    stage('Stage 3') {
-        echo 'This is Stage 3'
-        
+  }
+  post {
+    always {
+      script {
+        def ghStatus = [:]
+        ghStatus['context'] = 'Jenkins Pipeline'
+        ghStatus['state'] = currentBuild.currentResult == 'SUCCESS' ? 'success' : 'failure'
+        ghStatus['description'] = "Build ${ghStatus['state']}"
+        ghStatus['targetUrl'] = "${env.BUILD_URL}"
+        githubSetCommitStatus ghStatus
+      }
     }
+  }
 }
